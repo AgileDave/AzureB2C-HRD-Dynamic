@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TrustFrameworkPolicy PolicySchemaVersion="0.3.0.0" TenantId="wkb2ctest.onmicrosoft.com" PolicyId="B2C_1A_TrustFramework_Localization" PublicPolicyUri="http://wkb2ctest.onmicrosoft.com/B2C_1A_TrustFramework_Localization"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <BasePolicy>
+        <TenantId>wkb2ctest.onmicrosoft.com</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkBase</PolicyId>
+    </BasePolicy>
+
+    <BuildingBlocks>
+        <ContentDefinitions>
+            <ContentDefinition Id="api.signuporsignin">
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.signuporsignin.en" />
+                    <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.signuporsignin.es" />
+                </LocalizedResourcesReferences>
+            </ContentDefinition>
+        </ContentDefinitions>
+        <Localization Enabled="true">
+            <SupportedLanguages DefaultLanguage="en" MergeBehavior="ReplaceAll">
+                <SupportedLanguage>en</SupportedLanguage>
+                <SupportedLanguage>es</SupportedLanguage>
+            </SupportedLanguages>
+            <LocalizedResources Id="api.signuporsignin.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Please enter your email</LocalizedString>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Enter your email address to signin</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+            <LocalizedResources Id="api.signuporsignin.es">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Por favor introduzca su correo electrónico</LocalizedString>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Ingrese su dirección de correo electrónico para iniciar sesión</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+        </Localization>
+    </BuildingBlocks>
+
+</TrustFrameworkPolicy>

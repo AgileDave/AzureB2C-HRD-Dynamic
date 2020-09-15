@@ -1,0 +1,209 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="{Settings:Tenant}.onmicrosoft.com" PolicyId="B2C_1A_TrustFramework_Providers" PublicPolicyUri="http://{Settings:Tenant}.onmicrosoft.com/B2C_1A_TrustFramework_Providers">
+
+    <BasePolicy>
+        <TenantId>{Settings:Tenant}.onmicrosoft.com</TenantId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
+    </BasePolicy>
+    <BuildingBlocks>
+    </BuildingBlocks>
+    <ClaimsProviders>
+
+        <ClaimsProvider>
+            <DisplayName>IdP REST API</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="REST-GetProviders">
+                    <DisplayName>Get configured IdP providers from App Service endpoint</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.RestfulProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ServiceUrl">{Settings:IdPRESTAPI}</Item>
+                        <Item Key="SendClaimsIn">QueryString</Item>
+                        <!-- Set AuthenticationType to Basic or ClientCertificate in production environments -->
+                        <Item Key="AuthenticationType">None</Item>
+                        <!-- REMOVE the following line in production environments -->
+                        <Item Key="AllowInsecureAuthInProduction">true</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <!-- Claims parsed from your REST API -->
+                        <OutputClaim ClaimTypeReferenceId="providers" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+        <ClaimsProvider>
+            <DisplayName>Parse domain parameter</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="HRDLogic">
+                    <DisplayName>ParseDomainHint</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="IncludeClaimResolvingInClaimsHandling">true</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="dummyTrue" DefaultValue="true"/>
+                        <InputClaim ClaimTypeReferenceId="signInName"/>
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="identityProviders"/>
+                        <!-- 
+                        <OutputClaim ClaimTypeReferenceId="knownDomain" /> 
+                        -->
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="ParseDomain" />
+                        <!--
+                        <OutputClaimsTransformation ReferenceId="DomainLookup" />
+                        -->
+                        <OutputClaimsTransformation ReferenceId="KnownDomainLookup" />
+                        <!-- 
+                        <OutputClaimsTransformation ReferenceId="CheckDomainParameterValue" />
+                        -->
+                        <OutputClaimsTransformation ReferenceId="CreateidentityProvidersCollection" />
+                    </OutputClaimsTransformations>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <Domain>M365x112487</Domain>
+            <DisplayName>Login with M365x112487 AAD OIDC</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="AAD-OIDC">
+                    <DisplayName>Login with Contoso AAD (OIDC)</DisplayName>
+                    <Description>Login with Contoso AAD (OIDC)</Description>
+                    <Protocol Name="OpenIdConnect" />
+                    <OutputTokenFormat>JWT</OutputTokenFormat>
+                    <Metadata>
+                        <Item Key="METADATA">https://login.microsoftonline.com/M365x112487.onmicrosoft.com/v2.0/.well-known/openid-configuration</Item>
+                        <Item Key="client_id">{Settings:ContosoAADClientId}</Item>
+                        <Item Key="UsePolicyInRedirectUri">false</Item>
+                        <Item Key="response_types">code</Item>
+                        <Item Key="scope">openid profile</Item>
+                        <Item Key="response_mode">form_post</Item>
+                        <Item Key="HttpBinding">POST</Item>
+                        <Item Key="ClaimTypeOnWhichToEnable">identityProviders</Item>
+                        <Item Key="ClaimValueOnWhichToEnable">M365x112487.OnMicrosoft.com</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <!-- u~4.Hoe5g4_iZP.N2AGQGD4d~_S1.8d0P1 -->
+                        <Key Id="client_secret" StorageReferenceId="B2C_1A_OneDotComSecret" />
+                    </CryptographicKeys>
+                    <InputClaims>
+                        <!--Demo: pass the login_hint to Azure AD home realm discovery page-->
+                        <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="login_hint" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="oid" />
+                        <OutputClaim ClaimTypeReferenceId="tenantId" PartnerClaimType="tid" />
+                        <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="given_name" />
+                        <OutputClaim ClaimTypeReferenceId="surName" PartnerClaimType="family_name" />
+                        <OutputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="name" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="identityProvider" DefaultValue="AADOIDCIDP" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="email" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CreateRandomUPNUserName" />
+                        <OutputClaimsTransformation ReferenceId="CreateUserPrincipalName" />
+                        <OutputClaimsTransformation ReferenceId="CreateAlternativeSecurityId" />
+                        <OutputClaimsTransformation ReferenceId="CreateSubjectClaimFromAlternativeSecurityId" />
+                    </OutputClaimsTransformations>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialLogin" />
+                    <EnabledForUserJourneys>OnItemExistenceInStringCollectionClaim</EnabledForUserJourneys>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+        <ClaimsProvider>
+            <Domain>Microsoft</Domain>
+            <DisplayName>Login with Microsoft AAD OIDC</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="MSA-OIDC">
+                    <DisplayName>Login with Microsoft AAD (OIDC)</DisplayName>
+                    <Description>Login with Microsoft AAD (OIDC)</Description>
+                    <Protocol Name="OpenIdConnect" />
+                    <OutputTokenFormat>JWT</OutputTokenFormat>
+                    <Metadata>
+                        <Item Key="METADATA">https://login.microsoftonline.com/microsoft.onmicrosoft.com/v2.0/.well-known/openid-configuration</Item>
+                        <Item Key="client_id">{Settings:MSFTAADClientId}</Item>
+                        <Item Key="UsePolicyInRedirectUri">false</Item>
+                        <Item Key="response_types">code</Item>
+                        <Item Key="scope">openid profile</Item>
+                        <Item Key="response_mode">form_post</Item>
+                        <Item Key="HttpBinding">POST</Item>
+                        <Item Key="ClaimTypeOnWhichToEnable">identityProviders</Item>
+                        <Item Key="ClaimValueOnWhichToEnable">Microsoft.com</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <!-- I9L8O4fBo..3~.eldcUGHQSm_h-Fs10.1L -->
+                        <Key Id="client_secret" StorageReferenceId="B2C_1A_TwoDotComSecret" />
+                    </CryptographicKeys>
+                    <InputClaims>
+                        <!--Demo: pass the login_hint to Azure AD home realm discovery page-->
+                        <InputClaim ClaimTypeReferenceId="signInName" PartnerClaimType="login_hint" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="issuerUserId" PartnerClaimType="oid" />
+                        <OutputClaim ClaimTypeReferenceId="tenantId" PartnerClaimType="tid" />
+                        <OutputClaim ClaimTypeReferenceId="givenName" PartnerClaimType="given_name" />
+                        <OutputClaim ClaimTypeReferenceId="surName" PartnerClaimType="family_name" />
+                        <OutputClaim ClaimTypeReferenceId="displayName" PartnerClaimType="name" />
+                        <OutputClaim ClaimTypeReferenceId="authenticationSource" DefaultValue="socialIdpAuthentication" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="identityProvider" DefaultValue="MSAOIDCIDP" AlwaysUseDefaultValue="true" />
+                        <OutputClaim ClaimTypeReferenceId="email" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CreateRandomUPNUserName" />
+                        <OutputClaimsTransformation ReferenceId="CreateUserPrincipalName" />
+                        <OutputClaimsTransformation ReferenceId="CreateAlternativeSecurityId" />
+                        <OutputClaimsTransformation ReferenceId="CreateSubjectClaimFromAlternativeSecurityId" />
+                    </OutputClaimsTransformations>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-SocialLogin" />
+                    <EnabledForUserJourneys>OnItemExistenceInStringCollectionClaim</EnabledForUserJourneys>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+
+        <!--Demo: This technical profile collects the sign-in email address and extracts the sign-in domain name -->
+        <ClaimsProvider>
+            <DisplayName>Local Account</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SelfAsserted-Signin-Email">
+                    <DisplayName>Local Account Signin</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="signInName" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="signInName" Required="true" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <!-- Disable Sign Up-->
+        <ClaimsProvider>
+            <DisplayName>Local Account</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
+                    <Metadata>
+                        <Item Key="setting.showSignupLink">false</Item>
+                    </Metadata>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+    </ClaimsProviders>
+</TrustFrameworkPolicy>
