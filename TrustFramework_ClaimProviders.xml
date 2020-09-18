@@ -11,6 +11,19 @@
     <ClaimsProviders>
 
         <ClaimsProvider>
+            <DisplayName>Set Product Name</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="REST-SetProductName">
+                    <DisplayName>Get Product Name (hardcoded at first)</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="product" DefaultValue="Transmogrifier" AlwaysUseDefaultValue="true" />
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
             <DisplayName>IdP REST API</DisplayName>
             <TechnicalProfiles>
                 <TechnicalProfile Id="REST-GetProviders">
@@ -24,6 +37,9 @@
                         <!-- REMOVE the following line in production environments -->
                         <Item Key="AllowInsecureAuthInProduction">true</Item>
                     </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="product" DefaultValue="Widget" AlwaysUseDefaultValue="true" />
+                    </InputClaims>
                     <OutputClaims>
                         <!-- Claims parsed from your REST API -->
                         <OutputClaim ClaimTypeReferenceId="providers" />

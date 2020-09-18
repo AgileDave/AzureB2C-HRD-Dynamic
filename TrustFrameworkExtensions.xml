@@ -46,6 +46,12 @@
         <DataType>stringCollection</DataType>
         <UserHelpText>an array of configured IdPs, names correspond to the domainParameter of the IdP</UserHelpText>
       </ClaimType>
+
+      <ClaimType Id="product">
+        <DisplayName>The product name</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>The product name, either Widget or Transmogrifier</UserHelpText>
+      </ClaimType>
     </ClaimsSchema>
     <ClaimsTransformations>
       <!--Demo: Gets the domain portion of the sign-in email address-->
