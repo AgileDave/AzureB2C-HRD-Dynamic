@@ -11,6 +11,15 @@
 
     <BuildingBlocks>
         <ContentDefinitions>
+            <ContentDefinition Id="api.selfasserted">
+                <LoadUri>https://wkb2ccontent.blob.core.windows.net/b2croot/{Claim:product}/{Culture:LanguageName}/selfAsserted.html</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:selfasserted:1.1.0</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Collect information from user page</Item>
+                </Metadata>
+            </ContentDefinition>
+
             <ContentDefinition Id="api.signuporsignin">
                 <LocalizedResourcesReferences MergeBehavior="Prepend">
                     <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.signuporsignin.en" />
