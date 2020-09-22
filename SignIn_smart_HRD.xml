@@ -23,6 +23,10 @@
                 <OutputClaim ClaimTypeReferenceId="email" />
                 <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrEmail" />
                 <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
+                <OutputClaim ClaimTypeReferenceId="isActiveMFASession" />
+                <OutputClaim ClaimTypeReferenceId="isLastMFATimeGreaterThanWindow" />
+                <OutputClaim ClaimTypeReferenceId="extension_LastMFATime" PartnerClaimType="LastTimeUserDidMFA"/>
+                <OutputClaim ClaimTypeReferenceId="CurrentTime" />
                 <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub"/>
                 <OutputClaim ClaimTypeReferenceId="identityProviders"/>
             </OutputClaims>

@@ -148,10 +148,25 @@
                     </ClaimsExchanges>
                 </OrchestrationStep>
 
-                <!-- Start MFA Orchestration Steps -->
+                <!-- Start MFA Orchestration Steps (now with Last MFA Time!) -->
+
+                <OrchestrationStep Order="12" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="GetCurrentTime" TechnicalProfileReferenceId="API-GetSystemTime" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+
+                <!-- Read the last logon IP and last MFA time -->
+                <OrchestrationStep Order="13" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserReadStoredMFATime" TechnicalProfileReferenceId="AAD-UserReadStoredLastMFATime" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
 
                 <!--Sample: If uses is enrolled for MFA, ask the user to select the preferred method-->
-                <OrchestrationStep Order="12" Type="ClaimsExchange">
+                <OrchestrationStep Order="14" Type="ClaimsExchange">
                     <Preconditions>
                         <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
                             <Value>extension_mfaByPhoneOrEmail</Value>
@@ -165,7 +180,7 @@
 
                 <!-- Phone verification: If MFA is not required, the next three steps (#5-#7) should be removed.
              This step checks whether there's a phone number on record,  for the user. If found, then the user is challenged to verify it. -->
-                <OrchestrationStep Order="13" Type="ClaimsExchange">
+                <OrchestrationStep Order="15" Type="ClaimsExchange">
                     <Preconditions>
                         <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
                             <Value>isActiveMFASession</Value>
@@ -177,6 +192,13 @@
                             <Value>phone</Value>
                             <Action>SkipThisOrchestrationStep</Action>
                         </Precondition>
+                        <!-- Start add precondition that checks if MFA challenge is outside window -->
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>isLastMFATimeGreaterThanWindow</Value>
+                            <Value>False</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <!-- End precondition check for MFA challenge -->
                     </Preconditions>
                     <ClaimsExchanges>
                         <ClaimsExchange Id="PhoneFactor-Verify" TechnicalProfileReferenceId="PhoneFactor-InputOrVerify"/>
@@ -186,7 +208,7 @@
                 <!-- Save MFA phone number: The precondition verifies whether the user provided a new number in the 
              previous step. If so, then the phone number is stored in the directory for future authentication 
              requests. -->
-                <OrchestrationStep Order="14" Type="ClaimsExchange">
+                <OrchestrationStep Order="16" Type="ClaimsExchange">
                     <Preconditions>
                         <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
                             <Value>newPhoneNumberEntered</Value>
@@ -199,7 +221,7 @@
                 </OrchestrationStep>
 
                 <!--Sample: MFA with email-->
-                <OrchestrationStep Order="15" Type="ClaimsExchange">
+                <OrchestrationStep Order="17" Type="ClaimsExchange">
                     <Preconditions>
                         <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
                             <Value>extension_mfaByPhoneOrEmail</Value>
@@ -215,7 +237,7 @@
                 <!-- End MFA Orchestration Steps -->
 
 
-                <OrchestrationStep Order="16" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+                <OrchestrationStep Order="18" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
             </OrchestrationSteps>
             <ClientDefinition ReferenceId="DefaultWeb" />
         </UserJourney>

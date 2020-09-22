@@ -104,6 +104,27 @@
       <!-- End MFA Claim Types -->
 
 
+      <!-- Start MFA Timeout Claim Types -->
+
+      <ClaimType Id="extension_LastMFATime">
+        <DisplayName>last time user did MFA</DisplayName>
+        <DataType>dateTime</DataType>
+        <UserHelpText>last time user did MFA</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="CurrentTime">
+        <DisplayName>Current time</DisplayName>
+        <DataType>dateTime</DataType>
+        <UserHelpText>Current time</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="isLastMFATimeGreaterThanWindow">
+        <DisplayName>is the last time the user did MFA over the window</DisplayName>
+        <DataType>boolean</DataType>
+        <UserHelpText>is the last time the user did MFA over the window</UserHelpText>
+      </ClaimType>
+
+      <!-- End MFA Timeout Claim Types -->
+
+
     </ClaimsSchema>
     <ClaimsTransformations>
       <!--Demo: Gets the domain portion of the sign-in email address-->
@@ -211,6 +232,30 @@
 
 
       <!-- End MFA Phone Factor Claim Transformations -->
+
+      <!-- Start MFA Timeout Claim Transformations -->
+
+      <ClaimsTransformation Id="GetSystemDateTime" TransformationMethod="GetCurrentDateTime">
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="CurrentTime" TransformationClaimType="currentDateTime" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="CompareTimetoLastMFATime" TransformationMethod="DateTimeComparison">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="extension_LastMFATime" TransformationClaimType="firstDateTime" />
+          <InputClaim ClaimTypeReferenceId="CurrentTime" TransformationClaimType="secondDateTime" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="operator" DataType="string" Value="earlier than" />
+          <InputParameter Id="timeSpanInSeconds" DataType="int" Value="100" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="isLastMFATimeGreaterThanWindow" TransformationClaimType="result" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+
+      <!-- End MFA Timeout Claim Transformations -->
 
 
     </ClaimsTransformations>

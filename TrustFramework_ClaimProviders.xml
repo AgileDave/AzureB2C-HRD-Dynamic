@@ -330,10 +330,22 @@
                         <PersistedClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
                         <!--Sample: Add the MFA preferred method to the persisted claims collection -->
                         <PersistedClaim ClaimTypeReferenceId="extension_mfaByPhoneOrEmail" />
+                        <!-- Start MFA Timeout persisted claim for current time -->
+                        <PersistedClaim ClaimTypeReferenceId="CurrentTime" PartnerClaimType="extension_LastMFATime" />
+                        <!-- End MFA Timeout persisted claim for current time -->
                     </PersistedClaims>
                     <IncludeTechnicalProfile ReferenceId="AAD-Common" />
                 </TechnicalProfile>
 
+                <TechnicalProfile Id="AAD-GetSystemTime">
+                    <DisplayName>Retrieve current system time</DisplayName>
+                    <Protocol Name="None" />
+                    <!-- Start MFA timeout output claims transformation -->
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="GetSystemDateTime" />
+                    </OutputClaimsTransformations>
+                    <!-- End MFA timeout output claims transformation -->
+                </TechnicalProfile>
 
                 <TechnicalProfile Id="AAD-UserReadUsingObjectId">
                     <OutputClaims>
@@ -341,6 +353,20 @@
                         <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrEmail"/>
                         <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
                     </OutputClaims>
+                </TechnicalProfile>
+
+
+                <TechnicalProfile Id="API-GetSystemTime">
+                    <DisplayName>Get current system time</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId = "CurrentTime" />
+                    </OutputClaims>
+                    <!-- Start MFA timeout output claims transformation -->
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="GetSystemDateTime" />
+                    </OutputClaimsTransformations>
+                    <!-- End MFA timeout output claims transformation -->
                 </TechnicalProfile>
 
                 <TechnicalProfile Id="AAD-UserReadUsingAlternativeSecurityId">
@@ -380,9 +406,39 @@
                     <OutputClaims>
                         <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="Verified.OfficePhone" />
                         <OutputClaim ClaimTypeReferenceId="newPhoneNumberEntered" PartnerClaimType="newPhoneNumberEntered" />
+                        <!-- Start add output claim for active MFA session -->
+                        <OutputClaim ClaimTypeReferenceId="isActiveMFASession" DefaultValue="true"/>
+                        <!-- End add output claim for active MFA session -->
                     </OutputClaims>
                     <UseTechnicalProfileForSessionManagement ReferenceId="SM-MFA" />
                 </TechnicalProfile>
+
+                <!-- Start MFA Timeout Technical Profiles for PhoneFactor -->
+
+                <!-- Reads the the last time which they performed MFA -->
+                <TechnicalProfile Id="AAD-UserReadStoredLastMFATime">
+                    <Metadata>
+                        <Item Key="Operation">Read</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <!-- <OutputClaim ClaimTypeReferenceId="CurrentTime" /> -->
+                        <OutputClaim ClaimTypeReferenceId="extension_LastMFATime" DefaultValue="2018-10-01T15:00:00.0000000Z" />
+                    </OutputClaims>
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CompareTimetoLastMFATime" />
+                    </OutputClaimsTransformations>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+                <!-- End MFA Timeout Technical Profiles for PhoneFactor -->
+
+
+                <!-- End MFA Timeout Technical Profiles for PhoneFactor -->
+
 
             </TechnicalProfiles>
         </ClaimsProvider>
