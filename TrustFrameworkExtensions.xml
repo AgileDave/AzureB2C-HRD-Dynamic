@@ -52,6 +52,79 @@
         <DataType>string</DataType>
         <UserHelpText>The product name, either Widget or Transmogrifier</UserHelpText>
       </ClaimType>
+
+      <!-- Start MFA Claim Types -->
+
+      <ClaimType Id="extension_mfaByPhoneOrEmail">
+        <DisplayName>Please select your preferred MFA method</DisplayName>
+        <DataType>string</DataType>
+        <UserInputType>RadioSingleSelect</UserInputType>
+        <Restriction>
+          <Enumeration Text="Phone" Value="phone" SelectByDefault="true" />
+          <Enumeration Text="Email " Value="email" SelectByDefault="false" />
+        </Restriction>
+      </ClaimType>
+      <ClaimType Id="readOnlyEmail">
+        <DisplayName>Email Address</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText/>
+        <UserInputType>Readonly</UserInputType>
+      </ClaimType>
+
+
+      <ClaimType Id="newPhoneNumberEntered">
+        <DisplayName>New Phone Number Entered</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType>
+
+      <ClaimType Id="userIdForMFA">
+        <DisplayName>UserId for MFA</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+
+      <ClaimType Id="strongAuthenticationPhoneNumber">
+        <DisplayName>Phone Number</DisplayName>
+        <DataType>string</DataType>
+        <Mask Type="Simple">XXX-XXX-</Mask>
+        <UserHelpText>Your telephone number</UserHelpText>
+      </ClaimType>
+
+
+      <ClaimType Id="Verified.strongAuthenticationPhoneNumber">
+        <DisplayName>Verified Phone Number</DisplayName>
+        <DataType>string</DataType>
+        <DefaultPartnerClaimTypes>
+          <Protocol Name="OpenIdConnect" PartnerClaimType="phone_number" />
+        </DefaultPartnerClaimTypes>
+        <Mask Type="Simple">XXX-XXX-</Mask>
+        <UserHelpText>Your office phone number that has been verified</UserHelpText>
+      </ClaimType>
+
+
+      <!-- End MFA Claim Types -->
+
+
+      <!-- Start MFA Timeout Claim Types -->
+
+      <ClaimType Id="extension_LastMFATime">
+        <DisplayName>last time user did MFA</DisplayName>
+        <DataType>dateTime</DataType>
+        <UserHelpText>last time user did MFA</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="CurrentTime">
+        <DisplayName>Current time</DisplayName>
+        <DataType>dateTime</DataType>
+        <UserHelpText>Current time</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="isLastMFATimeGreaterThanWindow">
+        <DisplayName>is the last time the user did MFA over the window</DisplayName>
+        <DataType>boolean</DataType>
+        <UserHelpText>is the last time the user did MFA over the window</UserHelpText>
+      </ClaimType>
+
+      <!-- End MFA Timeout Claim Types -->
+
+
     </ClaimsSchema>
     <ClaimsTransformations>
       <!--Demo: Gets the domain portion of the sign-in email address-->
@@ -115,6 +188,76 @@
           <OutputClaim ClaimTypeReferenceId="identityProviders" TransformationClaimType="collection" />
         </OutputClaims>
       </ClaimsTransformation>
+
+      <!-- Start MFA Claim Transformations -->
+
+      <ClaimsTransformation Id="CopySignInNameToReadOnly" TransformationMethod="FormatStringClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="readOnlyEmail" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="CopyEmailToReadOnly" TransformationMethod="FormatStringClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="email" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="readOnlyEmail" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+      <!-- End MFA Claim Transformations -->
+
+      <!-- Start MFA Phone Factor Claim Transformations -->
+
+      <ClaimsTransformation Id="CreateUserIdForMFA" TransformationMethod="FormatStringClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="objectId" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0}@{RelyingPartyTenantId}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="userIdForMFA" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+
+      <!-- End MFA Phone Factor Claim Transformations -->
+
+      <!-- Start MFA Timeout Claim Transformations -->
+
+      <ClaimsTransformation Id="GetSystemDateTime" TransformationMethod="GetCurrentDateTime">
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="CurrentTime" TransformationClaimType="currentDateTime" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="CompareTimetoLastMFATime" TransformationMethod="DateTimeComparison">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="extension_LastMFATime" TransformationClaimType="firstDateTime" />
+          <InputClaim ClaimTypeReferenceId="CurrentTime" TransformationClaimType="secondDateTime" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="operator" DataType="string" Value="earlier than" />
+          <InputParameter Id="timeSpanInSeconds" DataType="int" Value="100" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="isLastMFATimeGreaterThanWindow" TransformationClaimType="result" />
+        </OutputClaims>
+      </ClaimsTransformation>
+
+
+      <!-- End MFA Timeout Claim Transformations -->
+
+
     </ClaimsTransformations>
 
   </BuildingBlocks>
