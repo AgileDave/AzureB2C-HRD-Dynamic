@@ -21,6 +21,8 @@
                 <OutputClaim ClaimTypeReferenceId="surname" PartnerClaimType="surname"/>
                 <OutputClaim ClaimTypeReferenceId="identityProvider" />
                 <OutputClaim ClaimTypeReferenceId="email" />
+                <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrEmail" />
+                <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
                 <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub"/>
                 <OutputClaim ClaimTypeReferenceId="identityProviders"/>
             </OutputClaims>

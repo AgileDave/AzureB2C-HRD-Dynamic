@@ -218,8 +218,200 @@
                     <Metadata>
                         <Item Key="setting.showSignupLink">false</Item>
                     </Metadata>
+                    <!-- Start MFA Output Claim Transformations -->
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CopySignInNameToReadOnly" />
+                    </OutputClaimsTransformations>
+                    <!-- End MFA Output Claim Transformations -->
                 </TechnicalProfile>
             </TechnicalProfiles>
         </ClaimsProvider>
+
+        <!-- Start MFA Claims Providers -->
+
+        <ClaimsProvider>
+            <DisplayName>Self Asserted</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SelfAsserted-Select-MFA-Method">
+                    <DisplayName>Allow user to choose their MFA Method</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                    </Metadata>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrEmail" Required="true"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="EmailVerifyOnSignIn">
+                    <DisplayName>EmailVerifyOnSignIn</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="readOnlyEmail" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <!-- Required claims -->
+                        <OutputClaim ClaimTypeReferenceId="isActiveMFASession" DefaultValue="true"/>
+                        <OutputClaim ClaimTypeReferenceId="readOnlyEmail" PartnerClaimType="Verified.Email"/>
+                    </OutputClaims>
+                    <ValidationTechnicalProfiles>
+                        <ValidationTechnicalProfile ReferenceId="AAD-UserWriteMFAMethod">
+                        </ValidationTechnicalProfile>
+                    </ValidationTechnicalProfiles>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-MFA" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <ClaimsProvider>
+            <DisplayName>Local Account</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="LocalAccountSignUpWithLogonEmail">
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CopyEmailToReadOnly" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile>
+
+                <!-- <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
+                    <OutputClaimsTransformations>
+                        <OutputClaimsTransformation ReferenceId="CopySignInNameToReadOnly" />
+                    </OutputClaimsTransformations>
+                </TechnicalProfile> -->
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+
+        <ClaimsProvider>
+            <DisplayName>Azure Active Directory</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="AAD-Common">
+                    <!-- Provide objectId and appId before using extension properties. -->
+                    <Metadata>
+                        <Item Key="ApplicationObjectId">{Settings:ExtensionsObjId}</Item>
+                        <Item Key="ClientId">{Settings:ExtensionsAppId}</Item>
+                    </Metadata>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserWriteMFAMethod">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+                    </Metadata>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" />
+                    </InputClaims>
+                    <PersistedClaims>
+                        <!-- Required claims -->
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="userPrincipalName" />
+                        <PersistedClaim ClaimTypeReferenceId="extension_mfaByPhoneOrEmail" />
+                        <PersistedClaim ClaimTypeReferenceId="displayName" />
+                    </PersistedClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-AAD" />
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserWritePhoneNumberUsingObjectId">
+                    <Metadata>
+                        <Item Key="Operation">Write</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalAlreadyExists">false</Item>
+                        <Item Key="RaiseErrorIfClaimsPrincipalDoesNotExist">true</Item>
+                    </Metadata>
+                    <IncludeInSso>false</IncludeInSso>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="objectId" Required="true" />
+                    </InputClaims>
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="objectId" />
+                        <PersistedClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
+                        <!--Sample: Add the MFA preferred method to the persisted claims collection -->
+                        <PersistedClaim ClaimTypeReferenceId="extension_mfaByPhoneOrEmail" />
+                    </PersistedClaims>
+                    <IncludeTechnicalProfile ReferenceId="AAD-Common" />
+                </TechnicalProfile>
+
+
+                <TechnicalProfile Id="AAD-UserReadUsingObjectId">
+                    <OutputClaims>
+                        <!--Sample: Read the MFA preferred method-->
+                        <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrEmail"/>
+                        <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
+                    </OutputClaims>
+                </TechnicalProfile>
+
+                <TechnicalProfile Id="AAD-UserReadUsingAlternativeSecurityId">
+                    <OutputClaims>
+                        <!--Sample: Read the MFA preferred method-->
+                        <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrEmail"/>
+                        <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+        <!-- Start PhoneFactor Claims Providers for MFA -->
+
+        <ClaimsProvider>
+            <DisplayName>PhoneFactor</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="PhoneFactor-InputOrVerify">
+                    <DisplayName>PhoneFactor</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.PhoneFactorProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <Metadata>
+                        <Item Key="ContentDefinitionReferenceId">api.phonefactor</Item>
+                        <Item Key="ManualPhoneNumberEntryAllowed">true</Item>
+                    </Metadata>
+                    <CryptographicKeys>
+                        <Key Id="issuer_secret" StorageReferenceId="B2C_1A_TokenSigningKeyContainer" />
+                    </CryptographicKeys>
+                    <InputClaimsTransformations>
+                        <InputClaimsTransformation ReferenceId="CreateUserIdForMFA" />
+                    </InputClaimsTransformations>
+                    <InputClaims>
+                        <InputClaim ClaimTypeReferenceId="userIdForMFA" PartnerClaimType="UserId" />
+                        <InputClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" />
+                        <InputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="Verified.OfficePhone" />
+                    </InputClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="Verified.OfficePhone" />
+                        <OutputClaim ClaimTypeReferenceId="newPhoneNumberEntered" PartnerClaimType="newPhoneNumberEntered" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-MFA" />
+                </TechnicalProfile>
+
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <!-- End PhoneFactor Claims Providers for MFA -->
+
+
+        <!-- Start MFA Session Management Claims Providers -->
+
+        <ClaimsProvider>
+            <DisplayName>Session Management</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="SM-MFA">
+                    <DisplayName>Session Mananagement Provider</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.SSO.DefaultSSOSessionProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <PersistedClaims>
+                        <PersistedClaim ClaimTypeReferenceId="strongAuthenticationPhoneNumber" />
+                    </PersistedClaims>
+                    <OutputClaims>
+                        <OutputClaim ClaimTypeReferenceId="isActiveMFASession" DefaultValue="true"/>
+                    </OutputClaims>
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+        <!-- End MFA Session Management Claims Providers -->
+
+
+        <!-- End MFA Claims Providers -->
+
     </ClaimsProviders>
 </TrustFrameworkPolicy>
