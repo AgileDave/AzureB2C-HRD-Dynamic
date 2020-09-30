@@ -197,6 +197,7 @@
                     <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.SelfAssertedAttributeProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
                     <Metadata>
                         <Item Key="ContentDefinitionReferenceId">api.selfasserted</Item>
+                        <Item Key="setting.showCancelButton">false</Item>
                     </Metadata>
                     <IncludeInSso>false</IncludeInSso>
                     <InputClaims>
@@ -217,6 +218,7 @@
                 <TechnicalProfile Id="SelfAsserted-LocalAccountSignin-Email">
                     <Metadata>
                         <Item Key="setting.showSignupLink">false</Item>
+                        <Item Key="setting.enableRememberMe">True</Item>
                     </Metadata>
                     <!-- Start MFA Output Claim Transformations -->
                     <OutputClaimsTransformations>

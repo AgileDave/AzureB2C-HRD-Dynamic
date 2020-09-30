@@ -14,10 +14,14 @@
             <ContentDefinition Id="api.selfasserted">
                 <LoadUri>https://wkb2ccontent.blob.core.windows.net/b2croot/{Claim:product}/{Culture:LanguageName}/selfAsserted.html</LoadUri>
                 <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
-                <DataUri>urn:com:microsoft:aad:b2c:elements:selfasserted:1.1.0</DataUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
                 <Metadata>
                     <Item Key="DisplayName">Collect information from user page</Item>
                 </Metadata>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.selfasserted.en" />
+                    <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.selfasserted.es" />
+                </LocalizedResourcesReferences>
             </ContentDefinition>
 
 
@@ -41,6 +45,7 @@
                     <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.signuporsignin.es" />
                 </LocalizedResourcesReferences>
             </ContentDefinition>
+
         </ContentDefinitions>
         <Localization Enabled="true">
             <SupportedLanguages DefaultLanguage="en" MergeBehavior="ReplaceAll">
@@ -57,6 +62,20 @@
                 <LocalizedStrings>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Por favor introduzca su correo electrónico</LocalizedString>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Ingrese su dirección de correo electrónico para iniciar sesión</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+            <LocalizedResources Id="api.selfasserted.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Yo! Please enter your email</LocalizedString>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Enter your email address to signin</LocalizedString>
+                    <LocalizedString ElementType="ClaimsProvider" StringId="CancelExchange">Cancel This</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+            <LocalizedResources Id="api.selfasserted.es">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Yo Yo! Por favor introduzca su correo electrónico</LocalizedString>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Ingrese su dirección de correo electrónico para iniciar sesión</LocalizedString>
+                    <LocalizedString ElementType="ClaimsProvider" StringId="CancelExchange">Cancel This</LocalizedString>
                 </LocalizedStrings>
             </LocalizedResources>
         </Localization>

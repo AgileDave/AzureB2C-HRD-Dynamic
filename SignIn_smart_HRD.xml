@@ -11,6 +11,9 @@
     <RelyingParty>
         <DefaultUserJourney ReferenceId="SignIn" />
         <UserJourneyBehaviors>
+            <SingleSignOn Scope="{Settings:SSOScope}" KeepAliveInDays="{Settings:KeepAliveDays}" />
+            <SessionExpiryType>{Settings:ExpiryType}</SessionExpiryType>
+            <SessionExpiryInSeconds>{Settings:ExpirySeconds}</SessionExpiryInSeconds>
             <JourneyInsights TelemetryEngine="ApplicationInsights" InstrumentationKey="{Settings:AppInsigtsKey}" DeveloperMode="true" ClientEnabled="false" ServerEnabled="true" TelemetryVersion="1.0.0" />
         </UserJourneyBehaviors>
         <TechnicalProfile Id="PolicyProfile">
