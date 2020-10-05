@@ -11,6 +11,22 @@
     <ClaimsProviders>
 
         <ClaimsProvider>
+            <DisplayName>Set Is Password Reset</DisplayName>
+            <TechnicalProfiles>
+                <TechnicalProfile Id="StartPasswordResetFlow">
+                    <DisplayName>Set the password flow</DisplayName>
+                    <Protocol Name="Proprietary" Handler="Web.TPEngine.Providers.ClaimsTransformationProtocolProvider, Web.TPEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+                    <OutputClaims>
+                        <!--Sample: Setting the indicator whether user resetting the password-->
+                        <OutputClaim ClaimTypeReferenceId="isPasswordResetFlow" DefaultValue="true" />
+                    </OutputClaims>
+                    <UseTechnicalProfileForSessionManagement ReferenceId="SM-Noop" />
+                </TechnicalProfile>
+            </TechnicalProfiles>
+        </ClaimsProvider>
+
+
+        <ClaimsProvider>
             <DisplayName>Set Product Name</DisplayName>
             <TechnicalProfiles>
                 <TechnicalProfile Id="REST-SetProductName">

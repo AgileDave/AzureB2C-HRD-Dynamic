@@ -10,6 +10,15 @@
     </BasePolicy>
 
     <BuildingBlocks>
+
+        <ClaimsSchema>
+            <ClaimType Id="isPasswordResetFlow">
+                <DisplayName>Indicates whether user resetting the password</DisplayName>
+                <DataType>boolean</DataType>
+                <AdminHelpText>Add help text here</AdminHelpText>
+            </ClaimType>
+        </ClaimsSchema>
+
         <ContentDefinitions>
             <ContentDefinition Id="api.selfasserted">
                 <LoadUri>https://wkb2ccontent.blob.core.windows.net/b2croot/{Claim:product}/{Culture:LanguageName}/selfAsserted.html</LoadUri>
@@ -69,6 +78,8 @@
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Yo! Please enter your email</LocalizedString>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Enter your email address to signin</LocalizedString>
                     <LocalizedString ElementType="ClaimsProvider" StringId="CancelExchange">Cancel This</LocalizedString>
+                    <!--Sample: Localize the password reset button -->
+                    <LocalizedString ElementType="ClaimsProvider" StringId="PasswordResetExchange">Forgot your password?</LocalizedString>
                 </LocalizedStrings>
             </LocalizedResources>
             <LocalizedResources Id="api.selfasserted.es">
@@ -76,6 +87,8 @@
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Yo Yo! Por favor introduzca su correo electrónico</LocalizedString>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Ingrese su dirección de correo electrónico para iniciar sesión</LocalizedString>
                     <LocalizedString ElementType="ClaimsProvider" StringId="CancelExchange">Cancel This</LocalizedString>
+                    <!--Sample: Localize the password reset button -->
+                    <LocalizedString ElementType="ClaimsProvider" StringId="PasswordResetExchange">Forgot your password?</LocalizedString>
                 </LocalizedStrings>
             </LocalizedResources>
         </Localization>
