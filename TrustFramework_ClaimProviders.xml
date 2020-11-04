@@ -745,7 +745,7 @@
                     <OutputClaims>
                         <!--Sample: Read the MFA preferred method-->
                         <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrEmail"/>
-                        <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
+                        <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" DefaultValue="YYY-YYY-YYYY" />
                     </OutputClaims>
                 </TechnicalProfile>
 
@@ -767,7 +767,7 @@
                     <OutputClaims>
                         <!--Sample: Read the MFA preferred method-->
                         <OutputClaim ClaimTypeReferenceId="extension_mfaByPhoneOrEmail"/>
-                        <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" />
+                        <OutputClaim ClaimTypeReferenceId="Verified.strongAuthenticationPhoneNumber" PartnerClaimType="strongAuthenticationPhoneNumber" DefaultValue="XXX-XXX-XXXX" />
                     </OutputClaims>
                 </TechnicalProfile>
             </TechnicalProfiles>
