@@ -241,5 +241,268 @@
             </OrchestrationSteps>
             <ClientDefinition ReferenceId="DefaultWeb" />
         </UserJourney>
+
+
+        <UserJourney Id="SignInWithAzureMfa">
+
+            <OrchestrationSteps>
+                <OrchestrationStep Order="1" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SetProductName" TechnicalProfileReferenceId="REST-SetProductName" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+
+                <OrchestrationStep Order="2" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-Signin-Email" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+
+
+                <OrchestrationStep Order="3" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="RESTGetIdPs" TechnicalProfileReferenceId="REST-GetProviders" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+
+                <OrchestrationStep Order="4" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="ParseDomainHintLogic" TechnicalProfileReferenceId="HRDLogic" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+
+                <!-- If the domain_hint did not match any known domain, then redirect to a default local account sign in-->
+                <OrchestrationStep Order="5" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>isKnownCustomer</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsProviderSelections>
+                        <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+                    </ClaimsProviderSelections>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+                <!-- dont run this step if the domain was known, or we have an objectid (local account sign in)-->
+                <OrchestrationStep Order="6" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>isKnownCustomer</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- If the domain matched any known domain, then this step will have a single IdP
+                    enabled due to each known IdP TP having an enablement flag via identityProviders claim -->
+                <OrchestrationStep Order="7" Type="ClaimsProviderSelection" ContentDefinitionReferenceId="api.idpselections">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>isKnownCustomer</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsProviderSelections>
+                        <ClaimsProviderSelection TargetClaimsExchangeId="AADOIDC" />
+                        <ClaimsProviderSelection TargetClaimsExchangeId="MSAOIDC" />
+                    </ClaimsProviderSelections>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="8" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>isKnownCustomer</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADOIDC" TechnicalProfileReferenceId="AAD-OIDC" />
+                        <ClaimsExchange Id="MSAOIDC" TechnicalProfileReferenceId="MSA-OIDC" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- For social IDP authentication, attempt to find the user account in the directory. -->
+                <OrchestrationStep Order="9" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>isKnownCustomer</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserReadUsingAlternativeSecurityId" TechnicalProfileReferenceId="AAD-UserReadUsingAlternativeSecurityId-NoError" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Still dont have objectId (social idp user that doesnt yet exist) - write the account -->
+                <OrchestrationStep Order="10" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>objectId</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingAlternativeSecurityId" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <OrchestrationStep Order="11" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>isKnownCustomer</Value>
+                            <Value>True</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Start MFA Orchestration Steps (now with Last MFA Time!) -->
+
+                <OrchestrationStep Order="12" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="GetCurrentTime" TechnicalProfileReferenceId="API-GetSystemTime" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+
+                <!-- Read the last logon IP and last MFA time -->
+                <OrchestrationStep Order="13" Type="ClaimsExchange">
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserReadStoredMFATime" TechnicalProfileReferenceId="AAD-UserReadStoredLastMFATime" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+
+                <!--Sample: If uses is enrolled for MFA, ask the user to select the preferred method-->
+                <OrchestrationStep Order="14" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>extension_mfaByPhoneOrEmail</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="SelfAsserted-Select-MFA-Method" TechnicalProfileReferenceId="SelfAsserted-Select-MFA-Method" />
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Phone verification: If MFA is not required, the next three steps (#5-#7) should be removed.
+             This step checks whether there's a phone number on record,  for the user. If found, then the user is challenged to verify it. -->
+                <OrchestrationStep Order="15" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>isActiveMFASession</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <!--Sample: If the preferred MFA method is not 'phone' skip this orchestration step-->
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>extension_mfaByPhoneOrEmail</Value>
+                            <Value>phone</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <!-- Start add precondition that checks if MFA challenge is outside window -->
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>isLastMFATimeGreaterThanWindow</Value>
+                            <Value>False</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <!-- End precondition check for MFA challenge -->
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="VerifyByPhone" TechnicalProfileReferenceId="VerifyEmailOrPhone"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+
+                <OrchestrationStep Order="16" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+                            <Value>isActiveMFASession</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <!--Sample: If the preferred MFA method is not 'phone' skip this orchestration step-->
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>extension_mfaByPhoneOrEmail</Value>
+                            <Value>email</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <!-- Start add precondition that checks if MFA challenge is outside window -->
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+                            <Value>isLastMFATimeGreaterThanWindow</Value>
+                            <Value>False</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                        <!-- End precondition check for MFA challenge -->
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="VerifyByEmail" TechnicalProfileReferenceId="VerifyEmailOrPhone"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!-- Save MFA phone number: The precondition verifies whether the user provided a new number in the 
+             previous step. If so, then the phone number is stored in the directory for future authentication 
+             requests. -->
+                <OrchestrationStep Order="17" Type="ClaimsExchange">
+                    <!-- <Preconditions>
+                        <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+                            <Value>newPhoneNumberEntered</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions> -->
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="AADUserWriteWithObjectId" TechnicalProfileReferenceId="AAD-UserWritePhoneNumberUsingObjectId"/>
+                    </ClaimsExchanges>
+                </OrchestrationStep>
+
+                <!--Sample: MFA with email-->
+                <!-- <OrchestrationStep Order="17" Type="ClaimsExchange">
+                    <Preconditions>
+                        <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+                            <Value>extension_mfaByPhoneOrEmail</Value>
+                            <Value>email</Value>
+                            <Action>SkipThisOrchestrationStep</Action>
+                        </Precondition>
+                    </Preconditions>
+                    <ClaimsExchanges>
+                        <ClaimsExchange Id="Email-Verify" TechnicalProfileReferenceId="EmailVerifyOnSignIn" />
+                    </ClaimsExchanges>
+                </OrchestrationStep> -->
+
+                <!-- End MFA Orchestration Steps -->
+
+
+                <OrchestrationStep Order="18" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+            </OrchestrationSteps>
+            <ClientDefinition ReferenceId="DefaultWeb" />
+        </UserJourney>
+
+
     </UserJourneys>
 </TrustFrameworkPolicy>

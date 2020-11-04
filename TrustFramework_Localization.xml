@@ -6,7 +6,7 @@
 
     <BasePolicy>
         <TenantId>{Settings:Tenant}.onmicrosoft.com</TenantId>
-        <PolicyId>B2C_1A_TrustFrameworkBase</PolicyId>
+        <PolicyId>B2C_1A_TrustFrameworkExtensions</PolicyId>
     </BasePolicy>
 
     <BuildingBlocks>
@@ -20,16 +20,37 @@
         </ClaimsSchema>
 
         <ContentDefinitions>
-            <ContentDefinition Id="api.selfasserted">
+
+            <!-- Start AzureMFA Content Definitions -->
+            <ContentDefinition Id="api.error">
+                <LoadUri>~/tenant/default/exception.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:globalexception:1.2.0</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Global Error page</Item>
+                </Metadata>
+            </ContentDefinition>
+
+            <ContentDefinition Id="api.selfasserted.2.0.0">
+                <LoadUri>~/tenant/templates/AzureBlue/selfAsserted.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.0.0</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Collect information from user page</Item>
+                </Metadata>
+            </ContentDefinition>
+            <!-- End AzureMFA Content Definitions -->
+
+            <ContentDefinition Id="api.selfasserted.new">
                 <LoadUri>https://wkb2ccontent.blob.core.windows.net/b2croot/{Claim:product}/{Culture:LanguageName}/selfAsserted.html</LoadUri>
                 <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
-                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:1.2.0</DataUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:selfasserted:2.1.0</DataUri>
                 <Metadata>
                     <Item Key="DisplayName">Collect information from user page</Item>
                 </Metadata>
                 <LocalizedResourcesReferences MergeBehavior="Prepend">
-                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.selfasserted.en" />
-                    <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.selfasserted.es" />
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.selfasserted.new.en" />
+                    <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.selfasserted.new.es" />
                 </LocalizedResourcesReferences>
             </ContentDefinition>
 
@@ -49,11 +70,32 @@
 
 
             <ContentDefinition Id="api.signuporsignin">
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:2.0.0</DataUri>
                 <LocalizedResourcesReferences MergeBehavior="Prepend">
                     <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.signuporsignin.en" />
                     <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.signuporsignin.es" />
                 </LocalizedResourcesReferences>
             </ContentDefinition>
+
+
+            <ContentDefinition Id="api.signuporsignin.new">
+                <!-- 
+                <LoadUri>https://wkb2ccontent.blob.core.windows.net/b2croot/{Claim:product}/{Culture:LanguageName}/unified.html</LoadUri>
+                -->
+                <LoadUri>~/tenant/default/unified.cshtml</LoadUri>
+                <RecoveryUri>~/common/default_page_error.html</RecoveryUri>
+                <DataUri>urn:com:microsoft:aad:b2c:elements:contract:unifiedssp:1.2.0</DataUri>
+                <Metadata>
+                    <Item Key="DisplayName">Sign In with Local</Item>
+                </Metadata>
+                <LocalizedResourcesReferences MergeBehavior="Prepend">
+                    <LocalizedResourcesReference Language="en" LocalizedResourcesReferenceId="api.signuporsignin.new.en" />
+                    <LocalizedResourcesReference Language="es" LocalizedResourcesReferenceId="api.signuporsignin.new.es" />
+                </LocalizedResourcesReferences>
+            </ContentDefinition>
+
+
+
 
         </ContentDefinitions>
         <Localization Enabled="true">
@@ -61,31 +103,63 @@
                 <SupportedLanguage>en</SupportedLanguage>
                 <SupportedLanguage>es</SupportedLanguage>
             </SupportedLanguages>
+            <LocalizedResources Id="api.signuporsignin.new.en">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Please enter your email</LocalizedString>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Enter your email address to signin</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">Something bad happened</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Security Issue (Don't Do This): Can't Find Your Email Buddy</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">Security Issue (Don't Do This): Invalid Password Dude</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
+            <LocalizedResources Id="api.signuporsignin.new.es">
+                <LocalizedStrings>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Por favor introduzca su correo electrónico</LocalizedString>
+                    <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Ingrese su dirección de correo electrónico para iniciar sesión</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">ES - Something bad happened</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">ES - Security Issue (Don't Do This): Can't Find Your Email Buddy</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">ES - Security Issue (Don't Do This): Invalid Password Dude</LocalizedString>
+                </LocalizedStrings>
+            </LocalizedResources>
             <LocalizedResources Id="api.signuporsignin.en">
                 <LocalizedStrings>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Please enter your email</LocalizedString>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Enter your email address to signin</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">Something bad happened</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Security Issue (Don't Do This): Can't Find Your Email Buddy</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">Security Issue (Don't Do This): Invalid Password Dude</LocalizedString>
                 </LocalizedStrings>
             </LocalizedResources>
             <LocalizedResources Id="api.signuporsignin.es">
                 <LocalizedStrings>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Por favor introduzca su correo electrónico</LocalizedString>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Ingrese su dirección de correo electrónico para iniciar sesión</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">ES - Something bad happened</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">ES - Security Issue (Don't Do This): Can't Find Your Email Buddy</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">ES - Security Issue (Don't Do This): Invalid Password Dude</LocalizedString>
                 </LocalizedStrings>
             </LocalizedResources>
-            <LocalizedResources Id="api.selfasserted.en">
+            <LocalizedResources Id="api.selfasserted.new.en">
                 <LocalizedStrings>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Yo! Please enter your email</LocalizedString>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Enter your email address to signin</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="alert_message">EN - Custom Invalid Username or Password Message</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">Something bad happened</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">Security Issue (Don't Do This): Can't Find Your Email Buddy</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">Security Issue (Don't Do This): Invalid Password Dude</LocalizedString>
                     <LocalizedString ElementType="ClaimsProvider" StringId="CancelExchange">Cancel This</LocalizedString>
                     <!--Sample: Localize the password reset button -->
                     <LocalizedString ElementType="ClaimsProvider" StringId="PasswordResetExchange">Forgot your password?</LocalizedString>
                 </LocalizedStrings>
             </LocalizedResources>
-            <LocalizedResources Id="api.selfasserted.es">
+            <LocalizedResources Id="api.selfasserted.new.es">
                 <LocalizedStrings>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="DisplayName">Yo Yo! Por favor introduzca su correo electrónico</LocalizedString>
                     <LocalizedString ElementType="ClaimType" ElementId="signInName" StringId="UserHelpText">Ingrese su dirección de correo electrónico para iniciar sesión</LocalizedString>
+                    <LocalizedString ElementType="UxElement" StringId="alert_message">ES - Custom Invalid Username or Password Message</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="DefaultMessage">ES - Something bad happened</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfClaimsPrincipalDoesNotExist">ES - Security Issue (Don't Do This): Can't Find Your Email Buddy</LocalizedString>
+                    <LocalizedString ElementType="ErrorMessage" StringId="UserMessageIfInvalidPassword">ES - Security Issue (Don't Do This): Invalid Password Dude</LocalizedString>
                     <LocalizedString ElementType="ClaimsProvider" StringId="CancelExchange">Cancel This</LocalizedString>
                     <!--Sample: Localize the password reset button -->
                     <LocalizedString ElementType="ClaimsProvider" StringId="PasswordResetExchange">Forgot your password?</LocalizedString>
